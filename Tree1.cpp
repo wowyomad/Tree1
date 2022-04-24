@@ -1,9 +1,10 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <stdio.h>
 #include <conio.h>
 #include <algorithm>
 #include <stdlib.h>
 #include <Windows.h>
+#include <locale>
 
 #define STRING_BUFFER 1000
 #define SPACE 5
@@ -20,9 +21,9 @@ struct Tree
 	Tree* right = NULL;
 };
 
-//прямой(NLR)(PreOrder)
-//обратный(LRN)(PostOrder)
-//в порядке(LNR)(InOrder)
+//РїСЂСЏРјРѕР№(NLR)(PreOrder)
+//РѕР±СЂР°С‚РЅС‹Р№(LRN)(PostOrder)
+//РІ РїРѕСЂСЏРґРєРµ(LNR)(InOrder)
 
 Tree* NewLeaf(const Data data);
 void Insert(Tree** root, const Data key);
@@ -58,22 +59,21 @@ void UI_DeleteTree(Tree** root);
 
 int main()
 {
-
-	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
 	Tree* tree = NULL;
 	Tree* balancedTree = NULL;
 	bool done = false;
 	while (!done)
 	{
 		std::cout
-			<< "1. Добавить элемент \n"
-			<< "2. Просмотреть дерево\n"
-			<< "3. Найти элемент\n"
-			<< "4. Удалить элемент\n"
-			<< "5. Заполнить случайными числами\n"
-			<< "6. Очистить дерево\n"
-			<< "0. Выйти\n" << std::endl;
+			<< "1. Р”РѕР±Р°РІРёС‚СЊ СЌР»РµРјРµРЅС‚ \n"
+			<< "2. РџСЂРѕСЃРјРѕС‚СЂРµС‚СЊ РґРµСЂРµРІРѕ\n"
+			<< "3. РќР°Р№С‚Рё СЌР»РµРјРµРЅС‚\n"
+			<< "4. РЈРґР°Р»РёС‚СЊ СЌР»РµРјРµРЅС‚\n"
+			<< "5. Р—Р°РїРѕР»РЅРёС‚СЊ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё\n"
+			<< "6. РћС‡РёСЃС‚РёС‚СЊ РґРµСЂРµРІРѕ\n"
+			<< "0. Р’С‹Р№С‚Рё\n" << std::endl;
 		char option;
 		option = _getch();
 		fflush(stdin);
@@ -101,7 +101,7 @@ int main()
 			done = true;
 			break;
 		default:
-			std::cout << "Неверный ввод\n";
+			std::cout << "РќРµРІРµСЂРЅС‹Р№ РІРІРѕРґ\n";
 			break;
 		}
 	}
@@ -128,7 +128,7 @@ void Insert(Tree** root, const Data key)
 		prev = t;
 		if (key.id == t->data.id)
 		{
-			std::cout << "Беда!\n";
+			std::cout << "Р‘РµРґР°!\n";
 			return;
 		}
 		if (key.id > t->data.id)
@@ -197,10 +197,10 @@ void SearchElement(Tree* root, const int key)
 			break;
 	}
 	if (root != NULL)
-		std::cout << key << " нашёлся.\n"
-		<< "Его имя " << root->data.name << '\n' << std::endl;
+		std::cout << key << " РЅР°С€С‘Р»СЃСЏ.\n"
+		<< "Р•РіРѕ РёРјСЏ " << root->data.name << '\n' << std::endl;
 	else
-		std::cout << key << " не нашёлся\n" << std::endl;
+		std::cout << key << " РЅРµ РЅР°С€С‘Р»СЃСЏ\n" << std::endl;
 }
 
 void GetTreeSize(Tree* root, int* count)
@@ -360,13 +360,13 @@ void UI_Add(Tree** root)
 	char* temp = new char[STRING_BUFFER];
 	std::cout << "id:\t";
 	std::cin >> input.id;
-	std::cout << "Имя\t";
+	std::cout << "РРјСЏ\t";
 	std::cin >> temp;
 	if (!(std::cin))
 	{
-		std::cout << "\n\nНекорректный ввод!\n\n";
 		std::cin.clear();
 		std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+		std::cout << "\n\nРќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РІРІРѕРґ!\n\n";
 		return;
 
 	}
@@ -384,11 +384,11 @@ void UI_View(Tree** root)
 	while (!done)
 	{
 		std::cout
-			<< "1. Прямой обход\n"
-			<< "2. Обратный обход\n"
-			<< "3. Обход по порядку\n"
-			<< "4. Лежачее дерево\n"
-			<< "0. Назад\n" << std::endl;
+			<< "1. РџСЂСЏРјРѕР№ РѕР±С…РѕРґ\n"
+			<< "2. РћР±СЂР°С‚РЅС‹Р№ РѕР±С…РѕРґ\n"
+			<< "3. РћР±С…РѕРґ РїРѕ РїРѕСЂСЏРґРєСѓ\n"
+			<< "4. Р›РµР¶Р°С‡РµРµ РґРµСЂРµРІРѕ\n"
+			<< "0. РќР°Р·Р°Рґ\n" << std::endl;
 		char option;
 		option = _getch();
 		fflush(stdin);
@@ -411,7 +411,7 @@ void UI_View(Tree** root)
 			done = true;
 			break;
 		default:
-			printf("Неверный ввод\n");
+			printf("РќРµРІРµСЂРЅС‹Р№ РІРІРѕРґ\n");
 			break;
 		}
 		printf("\n");
@@ -420,7 +420,7 @@ void UI_View(Tree** root)
 
 void UI_Search(Tree** root)
 {
-	std::cout << "Введите id для поиска: ";
+	std::cout << "Р’РІРµРґРёС‚Рµ id РґР»СЏ РїРѕРёСЃРєР°: ";
 	int id;
 	std::cin >> id;
 	std::cout << std::endl;
@@ -429,15 +429,15 @@ void UI_Search(Tree** root)
 
 void UI_DeleteNode(Tree** root)
 {
-	std::cout << "Ввведите ключ, по которому будет\n"
-		<< "удалён элемент\n";
+	std::cout << "Р’РІРІРµРґРёС‚Рµ РєР»СЋС‡, РїРѕ РєРѕС‚РѕСЂРѕРјСѓ Р±СѓРґРµС‚\n"
+		<< "СѓРґР°Р»С‘РЅ СЌР»РµРјРµРЅС‚\n";
 	int id;
 	std::cout << "id: ";
 	while (!(std::cin >> id))
 	{
 		std::cin.clear();
 		std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
-		std::cout << "Некорректный ввод\n"
+		std::cout << "РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РІРІРѕРґ\n"
 			<< "id: ";
 	}
 	DeleteNode(root, id);
@@ -448,13 +448,13 @@ void UI_FillRandom(Tree** root)
 {
 	if (*root != NULL)
 	{
-		std::cout << "Очистите дерево, перед совершением операции\n";
+		std::cout << "РћС‡РёСЃС‚РёС‚Рµ РґРµСЂРµРІРѕ, РїРµСЂРµРґ СЃРѕРІРµСЂС€РµРЅРёРµРј РѕРїРµСЂР°С†РёРё\n";
 		return;
 	}
 	else
 	{
 		int amount;
-		std::cout << "Введите кол-во случайных чисел: ";
+		std::cout << "Р’РІРµРґРёС‚Рµ РєРѕР»-РІРѕ СЃР»СѓС‡Р°Р№РЅС‹С… С‡РёСЃРµР»: ";
 		std::cin >> amount;
 		MakeRandomTree(root, amount);
 	}
@@ -466,9 +466,9 @@ void UI_DeleteTree(Tree** root)
 	bool done = false;
 	while (!done)
 	{
-		std::cout << "Вы уверены, что хотите УДАЛИТЬ?\n"
-			<< "1. Да\n"
-			<< "0. Нет\n" << std::endl;
+		std::cout << "Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ РЈР”РђР›РРўР¬?\n"
+			<< "1. Р”Р°\n"
+			<< "0. РќРµС‚\n" << std::endl;
 		option = _getch();
 		fflush(stdin);
 		switch (option)
@@ -481,7 +481,7 @@ void UI_DeleteTree(Tree** root)
 			done = true;
 			break;
 		default:
-			std::cout << "Неверный ввод\n\n";
+			std::cout << "РќРµРІРµСЂРЅС‹Р№ РІРІРѕРґ\n\n";
 			break;
 		}
 	}
