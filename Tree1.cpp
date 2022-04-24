@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <algorithm>
 #include <stdlib.h>
+#include <Windows.h>
 
 #define STRING_BUFFER 1000
 #define SPACE 5
@@ -23,19 +24,18 @@ struct Tree
 //обратный(LRN)(PostOrder)
 //в порядке(LNR)(InOrder)
 
-
 Tree* NewLeaf(const Data data);
 void Insert(Tree** root, const Data key);
-Tree* DeleteNode(Tree* root, const int key);
+void DeleteNode(Tree** root, const int key);
 void DeleteTree(Tree** root);
 
 void SearchElement(Tree* root, const int key);
 
-int GetTreeSize(Tree* root, int* count);
+void GetTreeSize(Tree* root, int* count);
 int GetTreeSize(Tree* root);
 
 Tree* MinNode_key(Tree* root);
-Tree* MaxNode_key(Tree* root);
+Tree* MaxNode(Tree* root);
 
 void MakeRandomTree(Tree** root, const int amount);
 void MakeBalancedTree(Tree* original, Tree** balancedTree);
@@ -52,10 +52,15 @@ void PrintTree_LRN(Tree* root);
 void UI_Add(Tree** root);
 void UI_View(Tree** root);
 void UI_Search(Tree** root);
+void UI_DeleteNode(Tree** root);
+void UI_FillRandom(Tree** root);
+void UI_DeleteTree(Tree** root);
 
 int main()
 {
-	setlocale(LC_ALL, "Russian");
+
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
 	Tree* tree = NULL;
 	Tree* balancedTree = NULL;
 	bool done = false;
@@ -83,13 +88,21 @@ int main()
 		case '3':
 			UI_Search(&tree);
 			break;
+		case '4':
+			UI_DeleteNode(&tree);
+			break;
+		case '5':
+			UI_FillRandom(&tree);
+			break;
+		case '6':
+			DeleteTree(&tree);
+			break;
 		case '0':
 			done = true;
 			break;
 		default:
 			std::cout << "Неверный ввод\n";
 			break;
-
 		}
 	}
 	_getch();
@@ -130,46 +143,47 @@ void Insert(Tree** root, const Data key)
 		prev->left = t;
 }
 
-Tree* DeleteNode(Tree* root, const int key)
+void DeleteNode(Tree** root, const int key)
 {
-	if (root == NULL)
+	if (*root == NULL)
 	{
-		return root;
+		return;
 	}
-
-	if (key < root->data.id)
-		root->left = DeleteNode(root->left, key);
-	else if (key > root->data.id)
-		root->right = DeleteNode(root->right, key);
+	if (key < (*root)->data.id)
+		DeleteNode(&(*root)->left, key);
+	else if (key > (*root)->data.id)
+		DeleteNode(&(*root)->right, key);
 	else
 	{
-		Tree* temp = NULL;
+		Tree* temp = *root;
+		if ((*root)->left == NULL)
 		{
-			if (root->left == NULL)
-				temp = root->right;
-			else if (root->right == NULL)
-				temp = root->right;
-
-			delete root;
-			return temp;
+			(*root) = (*root)->right;
+			delete temp;
+			return;
 		}
-
-		temp = MaxNode_key(root->left);
-		root->data = temp->data;
-		root->right = DeleteNode(root->right, temp->data.id);
+		else if ((*root)->right == NULL)
+		{
+			(*root) = (*root)->left;
+			delete temp;
+			return;
+		}
+		else
+		{
+			temp = MaxNode((*root)->left);
+			(*root)->data = temp->data;
+			DeleteNode(&(*root)->right, temp->data.id);
+		}
 	}
-
-
 }
 void DeleteTree(Tree** root)
 {
-	if (*root == NULL)
-		return;
-
+	if (*root == NULL) return;
 	DeleteTree(&(*root)->left);
 	DeleteTree(&(*root)->right);
 	delete[](*root)->data.name;
 	delete* root;
+	*root = NULL;
 }
 void SearchElement(Tree* root, const int key)
 {
@@ -179,46 +193,43 @@ void SearchElement(Tree* root, const int key)
 			root = root->right;
 		else if (key < root->data.id)
 			root = root->left;
-		else if (key == root->data.id)
+		else
 			break;
 	}
 	if (root != NULL)
 		std::cout << key << " нашёлся.\n"
-		<< "Его имя " << root->data.name << '\n';
+		<< "Его имя " << root->data.name << '\n' << std::endl;
 	else
-		std::cout << key << " не нашёлся\n";
+		std::cout << key << " не нашёлся\n" << std::endl;
 }
-int GetTreeSize(Tree* root, int* count)
+
+void GetTreeSize(Tree* root, int* count)
 {
-	if (root == NULL) return (*count);
+	if (root == NULL) return;
 	GetTreeSize(root->left, count);
 	(*count)++;
 	GetTreeSize(root->right, count);
-
-
 }
+
 int GetTreeSize(Tree* root)
 {
 	int count = 0;
-	count = GetTreeSize(root, &count);
+	GetTreeSize(root, &count);
 	return count;
 }
 
 Tree* MinNode_key(Tree* root)
 {
-	if (root == NULL)
-		return root;
-
+	if (root == NULL) return root;
 	Tree* min = root;
 	while (min->left != NULL)
 		min = min->left;
 	return min;
 }
 
-Tree* MaxNode_key(Tree* root)
+Tree* MaxNode(Tree* root)
 {
 	if (root == NULL) return root;
-
 	Tree* max = root;
 	while (max->right != NULL)
 		max = max->right;
@@ -232,7 +243,6 @@ void PrintTree_LNR(Tree* root)
 	printf("%d\n", root->data.id);
 	printf("%s\n\n", root->data.name);
 	PrintTree_LNR(root->right);
-
 }
 
 void PrintTree_NLR(Tree* root)
@@ -257,7 +267,6 @@ void PrintTree_LRN(Tree* root)
 void TreeToArr(Tree* root, Data** arr)
 {
 	if (root == NULL) return;
-
 	TreeToArr(root->left, arr);
 	*((*arr)++) = root->data;
 	TreeToArr(root->right, arr);
@@ -289,6 +298,7 @@ void TreeToArr(Tree* root, Data* arr)
 				done = true;
 		}
 	}
+	delete[] stack;
 }
 
 void PrintTree_Tree(Tree* root, int space)
@@ -320,6 +330,7 @@ void MakeRandomTree(Tree** root, const int amount)
 		temp.name = new char{ '\0' };
 		Insert(root, temp);
 	}
+	delete[] arr;
 }
 
 
@@ -355,7 +366,7 @@ void UI_Add(Tree** root)
 	{
 		std::cout << "\n\nНекорректный ввод!\n\n";
 		std::cin.clear();
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 		return;
 
 	}
@@ -412,5 +423,66 @@ void UI_Search(Tree** root)
 	std::cout << "Введите id для поиска: ";
 	int id;
 	std::cin >> id;
+	std::cout << std::endl;
 	SearchElement(*root, id);
+}
+
+void UI_DeleteNode(Tree** root)
+{
+	std::cout << "Ввведите ключ, по которому будет\n"
+		<< "удалён элемент\n";
+	int id;
+	std::cout << "id: ";
+	while (!(std::cin >> id))
+	{
+		std::cin.clear();
+		std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+		std::cout << "Некорректный ввод\n"
+			<< "id: ";
+	}
+	DeleteNode(root, id);
+
+}
+
+void UI_FillRandom(Tree** root)
+{
+	if (*root != NULL)
+	{
+		std::cout << "Очистите дерево, перед совершением операции\n";
+		return;
+	}
+	else
+	{
+		int amount;
+		std::cout << "Введите кол-во случайных чисел: ";
+		std::cin >> amount;
+		MakeRandomTree(root, amount);
+	}
+}
+
+void UI_DeleteTree(Tree** root)
+{
+	char option;
+	bool done = false;
+	while (!done)
+	{
+		std::cout << "Вы уверены, что хотите УДАЛИТЬ?\n"
+			<< "1. Да\n"
+			<< "0. Нет\n" << std::endl;
+		option = _getch();
+		fflush(stdin);
+		switch (option)
+		{
+		case '1':
+			DeleteTree(root);
+			done = true;
+			break;
+		case '0':
+			done = true;
+			break;
+		default:
+			std::cout << "Неверный ввод\n\n";
+			break;
+		}
+	}
 }
