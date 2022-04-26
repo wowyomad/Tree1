@@ -7,13 +7,16 @@
 #include <locale>
 
 #define STRING_BUFFER 1000
-#define SPACE 5
+#define SPACE 2
 
 struct Data
 {
 	int id;
 	char* name;
 };
+
+void CopyData(const Data* src, Data* dst);
+
 struct Tree
 {
 	Data data;
@@ -35,20 +38,24 @@ void SearchElement(Tree* root, const int key);
 void GetTreeSize(Tree* root, int* count);
 int GetTreeSize(Tree* root);
 
+void MakeRandomTree(Tree** root, const int amount);
+void MakeBalancedTree(Tree* original, Tree** balancedTree);
+void BalanceTree(Tree** root, Data* arr, int low, const int high);
+void TreeToArr(Tree* root, Data* arr, const int size);
+void TreeToArr(Tree* root, Data** arr);
+
+void Individual(Tree* root, int* count);
+
 Tree* MinNode_key(Tree* root);
 Tree* MaxNode(Tree* root);
 
-void MakeRandomTree(Tree** root, const int amount);
-void MakeBalancedTree(Tree* original, Tree** balancedTree);
-void BalanceTree(Tree** root, Data* arr, int low, int high);
-void TreeToArr(Tree* root, Data* arr);
-void TreeToArr(Tree* root, Data** arr);
 
 void PrintTree_Tree(Tree* root, int space);
 void PrintTree_LNR(Tree* root);
 void PrintTree_NLR(Tree* root);
 void PrintTree_LRN(Tree* root);
 
+void PrintData(Data* data);
 
 void UI_Add(Tree** root);
 void UI_View(Tree** root);
@@ -56,13 +63,13 @@ void UI_Search(Tree** root);
 void UI_DeleteNode(Tree** root);
 void UI_FillRandom(Tree** root);
 void UI_DeleteTree(Tree** root);
+void UI_BalanceTree(Tree** root);
 
 int main()
 {
 	SetConsoleOutputCP(1251);
 	SetConsoleCP(1251);
 	Tree* tree = NULL;
-	Tree* balancedTree = NULL;
 	bool done = false;
 	while (!done)
 	{
@@ -73,8 +80,10 @@ int main()
 			<< "4. Удалить элемент\n"
 			<< "5. Заполнить случайными числами\n"
 			<< "6. Очистить дерево\n"
-			<< "0. Выйти\n" << std::endl;
-		char option;
+			<< "7. Сбланасировать дерево\n"
+			<< "0. Выйти\n";
+
+			char option;
 		option = _getch();
 		fflush(stdin);
 		switch (option)
@@ -95,7 +104,10 @@ int main()
 			UI_FillRandom(&tree);
 			break;
 		case '6':
-			DeleteTree(&tree);
+			UI_DeleteTree(&tree);
+			break;
+		case '7':
+			UI_BalanceTree(&tree);
 			break;
 		case '0':
 			done = true;
@@ -106,6 +118,14 @@ int main()
 		}
 	}
 	_getch();
+}
+
+void CopyData(const Data* src, Data* dst)
+{
+	int length = strlen(src->name) + 1;
+	dst->name = new char[length];
+	strcpy_s(dst->name, length, src->name);
+	dst->id = src->id;
 }
 
 Tree* NewLeaf(const Data data)
@@ -240,16 +260,16 @@ void PrintTree_LNR(Tree* root)
 {
 	if (root == NULL) return;
 	PrintTree_LNR(root->left);
-	printf("%d\n", root->data.id);
-	printf("%s\n\n", root->data.name);
+	PrintData(&root->data);
+	printf("\n");
 	PrintTree_LNR(root->right);
 }
 
 void PrintTree_NLR(Tree* root)
 {
 	if (root == NULL) return;
-	printf("%d\n", root->data.id);
-	printf("%s\n\n", root->data.name);
+	PrintData(&root->data);
+	printf("\n");
 	PrintTree_NLR(root->left);
 	PrintTree_NLR(root->right);
 }
@@ -259,9 +279,15 @@ void PrintTree_LRN(Tree* root)
 	if (root == NULL) return;
 	PrintTree_LRN(root->left);
 	PrintTree_LRN(root->right);
-	printf("%d\n", root->data.id);
-	printf("%s\n\n", root->data.name);
+	PrintData(&root->data);
+	printf("\n");
 
+}
+
+void PrintData(Data* data)
+{
+	printf("id:\t%d\n", data->id);
+	printf("Имя:\t%s\n", data->name);
 }
 
 void TreeToArr(Tree* root, Data** arr)
@@ -272,32 +298,36 @@ void TreeToArr(Tree* root, Data** arr)
 	TreeToArr(root->right, arr);
 }
 
-void TreeToArr(Tree* root, Data* arr)
+int Individual(Tree* root)
+{
+	if (root == NULL) return 0;
+	Tree** stack = new Tree * [GetTreeSize(root)];
+
+}
+
+void TreeToArr(Tree* root, Data* arr, const int size)
 {
 	if (root == NULL)
 		return;
-	Tree** stack = new Tree * [GetTreeSize(root)];
-	int top = -1;
-	int i = 0;
-	bool done = false;
-	while (!done)
+	Tree** stack = new Tree * [size + 1];
+	Tree* stack_null = *stack;
+	Data* arr_first = arr;
+	while (true)
 	{
 		if (root != NULL)
 		{
-			stack[++top] = root;
+			*(++stack) = root;
 			root = root->left;
 		}
-		else
+		else if (*stack != stack_null)
 		{
-			if (top > -1)
-			{
-				arr[i++] = stack[top]->data;
-				root = stack[top--]->right;
-			}
-			else
-				done = true;
+			CopyData(&(*stack)->data, arr++);
+			root = (*(stack--))->right;
 		}
+		else
+			break;
 	}
+	arr = arr_first;
 	delete[] stack;
 }
 
@@ -338,7 +368,7 @@ void MakeBalancedTree(Tree* original, Tree** balancedTree)
 {
 	int size = GetTreeSize(original);
 	Data* arr = new Data[size];
-	TreeToArr(original, arr);
+	TreeToArr(original, arr, size);
 	BalanceTree(balancedTree, arr, 0, size - 1);
 	delete[] arr;
 }
@@ -347,10 +377,10 @@ void BalanceTree(Tree** root, Data* arr, int low, int high)
 {
 	if (low > high) return;
 	int mid = (low + high) / 2;
-	*root = new Tree{ arr[mid] };
+	*root = new Tree;
+	CopyData(&arr[mid], &(*root)->data);
 	BalanceTree(&(*root)->left, arr, low, mid - 1);
 	BalanceTree(&(*root)->right, arr, mid + 1, high);
-
 }
 
 
@@ -485,4 +515,18 @@ void UI_DeleteTree(Tree** root)
 			break;
 		}
 	}
+}
+
+void UI_BalanceTree(Tree** root)
+{
+	if (*root == NULL)
+	{
+		std::cout << "Дерево пустое\n";
+		return;
+	}
+	Tree* balancedTree = NULL;
+	MakeBalancedTree(*root, &balancedTree);
+	DeleteTree(root);
+	*root = balancedTree;
+	std::cout << "Сбалансированное дерево было построено\n";
 }
